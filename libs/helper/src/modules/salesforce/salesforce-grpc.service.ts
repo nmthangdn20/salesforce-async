@@ -515,7 +515,7 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
     const continuousEvents: ParseEvent[] = [];
 
     for (const event of parsedEvents) {
-      (event.payload?.ChangeEventHeader as any).changeType = 'GAP_CREATE';
+      // (event.payload?.ChangeEventHeader as any).changeType = 'GAP_CREATE';
       const changeType = event.payload?.ChangeEventHeader?.changeType;
       if (changeType?.startsWith('GAP_')) {
         gapEvents.push(event);

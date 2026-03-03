@@ -67,31 +67,34 @@ export class DirtyRecordService {
   }
 
   /**
-   * Returns true if any of the given recordIds is dirty, OR if the entire
-   * object is marked dirty (object-level flag from gap without recordIds).
+   * Returns only the IDs from recordIds that are NOT dirty.
+   * If the entire object is dirty (object-level flag), returns an empty array.
+   * Used to partially process CDC events that contain a mix of dirty and clean records.
    */
-  async isAnyDirty(
+  async filterDirtyIds(
     filename: string,
     objectName: string,
     recordIds: string[],
-  ): Promise<boolean> {
-    if (!recordIds?.length) return false;
+  ): Promise<string[]> {
+    const ids = recordIds.filter(Boolean);
+    if (!ids.length) return [];
 
     const allDirty = await this.redisClient.exists(
       this.allKey(filename, objectName),
     );
-    if (allDirty) return true;
+    if (allDirty) return [];
 
     const k = this.recordKey(filename, objectName);
 
     const pipeline = this.redisClient.pipeline();
-    for (const id of recordIds) {
-      if (id) pipeline.sismember(k, id);
+    for (const id of ids) {
+      pipeline.sismember(k, id);
     }
 
     const results = await pipeline.exec();
-    return (results ?? []).some(
-      ([err, val]: [Error | null, unknown]) => !err && val === 1,
-    );
+    return ids.filter((_, i) => {
+      const [err, val] = (results ?? [])[i] as [Error | null, unknown];
+      return !!err || val !== 1;
+    });
   }
 }

@@ -66,20 +66,37 @@ export class CdcGapHandlerService {
         return;
       }
 
-      if (
-        await this.dirtyRecordService.isAnyDirty(
-          filename,
-          object.apiName,
-          recordIds,
-        )
-      ) {
+      const cleanIds = await this.dirtyRecordService.filterDirtyIds(
+        filename,
+        object.apiName,
+        recordIds,
+      );
+
+      if (cleanIds.length === 0) {
         this.logger.debug(
           `Skipping CDC event for dirty record(s) ${recordIds.join(',')} (${object.apiName}) until reconciled`,
         );
         return;
       }
 
-      const payload = this.mappingObjectToFlat(object, event.payload);
+      if (cleanIds.length < recordIds.length) {
+        const dirtyIds = recordIds.filter((id) => !cleanIds.includes(id));
+        this.logger.debug(
+          `Partial dirty skip: dropping ${dirtyIds.join(',')} (${object.apiName}), processing ${cleanIds.join(',')}`,
+        );
+      }
+
+      const rawPayload = this.mappingObjectToFlat(object, event.payload);
+      const payload =
+        cleanIds.length < recordIds.length
+          ? {
+              ...rawPayload,
+              ChangeEventHeader: {
+                ...rawPayload.ChangeEventHeader,
+                recordIds: cleanIds,
+              },
+            }
+          : rawPayload;
 
       if (!payload?.ChangeEventHeader?.changeType) {
         this.logger.warn(
