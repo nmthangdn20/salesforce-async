@@ -1,4 +1,3 @@
-// src/drizzle/connection-manager.ts
 import { DrizzleConnectionFactory } from '@app/core/modules/database/database.factory';
 import { DbConnectionConfig } from '@app/core/modules/database/types';
 

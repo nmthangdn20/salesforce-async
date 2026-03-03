@@ -26,10 +26,6 @@ export class DirtyRecordService {
 
   constructor(private readonly redisClient: RedisClientService) {}
 
-  // ---------------------------------------------------------------------------
-  // Key helpers
-  // ---------------------------------------------------------------------------
-
   private recordKey(filename: string, objectName: string): string {
     return `sf:dirty:${filename}:${objectName}`;
   }
@@ -37,10 +33,6 @@ export class DirtyRecordService {
   private allKey(filename: string, objectName: string): string {
     return `sf:dirty-all:${filename}:${objectName}`;
   }
-
-  // ---------------------------------------------------------------------------
-  // Record-level dirty (NORMAL gap with specific recordIds)
-  // ---------------------------------------------------------------------------
 
   async addDirty(
     filename: string,
@@ -65,10 +57,6 @@ export class DirtyRecordService {
     await this.redisClient.srem(k, ...ids);
   }
 
-  // ---------------------------------------------------------------------------
-  // Object-level dirty (NORMAL gap without recordIds — blocks all CDC for object)
-  // ---------------------------------------------------------------------------
-
   async addDirtyAll(filename: string, objectName: string): Promise<void> {
     const k = this.allKey(filename, objectName);
     await this.redisClient.set(k, '1', DirtyRecordService.TTL_SECONDS);
@@ -77,10 +65,6 @@ export class DirtyRecordService {
   async removeDirtyAll(filename: string, objectName: string): Promise<void> {
     await this.redisClient.del(this.allKey(filename, objectName));
   }
-
-  // ---------------------------------------------------------------------------
-  // Check
-  // ---------------------------------------------------------------------------
 
   /**
    * Returns true if any of the given recordIds is dirty, OR if the entire
@@ -93,14 +77,11 @@ export class DirtyRecordService {
   ): Promise<boolean> {
     if (!recordIds?.length) return false;
 
-    // Fast path: object-level flag blocks all CDC events for this object
-
     const allDirty = await this.redisClient.exists(
       this.allKey(filename, objectName),
     );
     if (allDirty) return true;
 
-    // Record-level: batch SISMEMBER via pipeline
     const k = this.recordKey(filename, objectName);
 
     const pipeline = this.redisClient.pipeline();

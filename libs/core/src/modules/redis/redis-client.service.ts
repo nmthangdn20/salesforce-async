@@ -83,10 +83,6 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
     return this.client.expire(key, seconds);
   }
 
-  // ---------------------------------------------------------------------------
-  // Set
-  // ---------------------------------------------------------------------------
-
   sadd(key: string, ...members: string[]): Promise<number> {
     return this.client.sadd(key, ...members);
   }

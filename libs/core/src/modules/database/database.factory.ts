@@ -1,4 +1,3 @@
-// src/db/drizzle.factory.ts
 import { DbConnectionConfig } from '@app/core/modules/database/types';
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import {
@@ -34,9 +33,6 @@ export class DrizzleConnectionFactory {
     }
   }
 
-  // --------------------------------------------------
-  // PostgreSQL FACTORY
-  // --------------------------------------------------
   private static createPgConnection(config: DbConnectionConfig): {
     db: AnyDrizzleDb;
     dispose: () => Promise<void>;
@@ -60,9 +56,6 @@ export class DrizzleConnectionFactory {
     return { db, dispose };
   }
 
-  // --------------------------------------------------
-  // MySQL FACTORY (đang comment theo yêu cầu)
-  // --------------------------------------------------
   // private static async createMysqlConnection(config: DbConnectionConfig): Promise<{
   //   db: AnyDrizzleDb;
   //   dispose: () => Promise<void>;

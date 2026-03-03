@@ -79,7 +79,7 @@ export class DbService implements OnModuleDestroy {
       const currentCols = await tx.getTableColumns({ schema, table });
       const currentMap = new Map(currentCols.map((c) => [c.columnName, c]));
 
-      // 1) Add missing columns (do not apply NOT NULL for now)
+      // Add missing columns (do not apply NOT NULL for now)
       for (const col of columns) {
         if (currentMap.has(col.name)) continue;
         if (!policy.allowAddColumn) throw new Error(`allowAddColumn=false`);
@@ -94,7 +94,7 @@ export class DbService implements OnModuleDestroy {
         });
       }
 
-      // 2) Update existing columns (type only)
+      // Update existing columns (type only)
       for (const col of columns) {
         const cur = currentMap.get(col.name);
         if (!cur) continue;
@@ -115,7 +115,7 @@ export class DbService implements OnModuleDestroy {
         }
       }
 
-      // 3) Drop extra columns (optional)
+      // Drop extra columns (optional)
       if (policy.allowDropColumn) {
         for (const cur of currentCols) {
           if (!desiredMap.has(cur.columnName)) {

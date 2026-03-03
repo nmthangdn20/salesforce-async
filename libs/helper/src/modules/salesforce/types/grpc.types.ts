@@ -1,13 +1,11 @@
 import type * as grpc from '@grpc/grpc-js';
 
-// ============ Enums ============
 export enum ReplayPreset {
-  LATEST = 0, // Receive only NEW events from subscribe point onwards
-  EARLIEST = 1, // Receive all events from the beginning of the topic
-  CUSTOM = 2, // Receive events from a specific replay ID
+  LATEST = 0,
+  EARLIEST = 1,
+  CUSTOM = 2,
 }
 
-// ============ Messages ============
 export type TopicInfo = {
   topic_name: string;
   tenant_guid: string;
@@ -63,9 +61,7 @@ export type SchemaInfo = {
   rpc_id: string;
 };
 
-// ============ Service Client Types ============
 export type PubSubClient = grpc.Client & {
-  // Metadata is passed when creating the stream (required for auth)
   Subscribe(
     metadata?: grpc.Metadata,
   ): grpc.ClientDuplexStream<FetchRequest, FetchResponse>;
@@ -87,7 +83,6 @@ export type EventBusV1Package = {
   PubSub: grpc.ServiceClientConstructor;
 };
 
-// ============ Config & Decoded Event ============
 export type SalesforceGrpcConfig = {
   accessToken: string;
   instanceUrl: string;
@@ -131,7 +126,6 @@ export type TChangeEventHeader = {
   changedFields: string[];
 };
 
-// ============ Subscription Types ============
 export interface SubscriptionOptions {
   numRequested?: number;
   replayPreset?: ReplayPreset;
@@ -159,14 +153,13 @@ export interface SubscriptionConfig {
   options: Required<SubscriptionOptions>;
   retryCount: number;
   lastReplayId?: Buffer;
-  // gap event tracking
   gapEventCount?: number;
   lastGapEventTime?: Date;
   /** Thời điểm resume; dùng để cooldown (không pause GAP ngay sau resume) */
   resumedAt?: Date;
 }
 
-export type StreamKey = `${string}:${string}`; // tenantId:topicName
+export type StreamKey = `${string}:${string}`;
 export type StreamMap = Map<
   StreamKey,
   grpc.ClientDuplexStream<FetchRequest, FetchResponse>

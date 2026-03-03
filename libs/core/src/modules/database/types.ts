@@ -1,5 +1,3 @@
-// src/drizzle/types.ts
-
 export type SupportedDbType = 'pg' | 'mysql';
 
 export interface DbConnectionConfig {

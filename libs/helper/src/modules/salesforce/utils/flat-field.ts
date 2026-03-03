@@ -25,10 +25,6 @@ type SalesforceData = {
   [key: string]: any;
 };
 
-// ============================================
-// PRIVATE HELPER FUNCTIONS
-// ============================================
-
 /**
  * Tìm prefix chung trong danh sách flat fields
  * @param flatFields - Danh sách tất cả các flat fields
@@ -115,12 +111,10 @@ const findMatchingKey = (
   obj: Record<string, any>,
   targetKey: string,
 ): { value: any; exists: boolean } => {
-  // 1. Exact match
   if (targetKey in obj) {
     return { value: obj[targetKey] as string, exists: true };
   }
 
-  // 2. Case-insensitive match
   const lowerTarget = targetKey.toLowerCase();
   for (const key in obj) {
     if (key.toLowerCase() === lowerTarget) {
@@ -128,11 +122,10 @@ const findMatchingKey = (
     }
   }
 
-  // 3. Try variations
   const variations = [
     targetKey,
-    targetKey.charAt(0).toLowerCase() + targetKey.slice(1), // camelCase
-    targetKey.charAt(0).toUpperCase() + targetKey.slice(1), // PascalCase
+    targetKey.charAt(0).toLowerCase() + targetKey.slice(1),
+    targetKey.charAt(0).toUpperCase() + targetKey.slice(1),
     targetKey.toLowerCase(),
     targetKey.toUpperCase(),
   ];
@@ -176,10 +169,6 @@ const buildReverseMapping = (
 
   return reverse;
 };
-
-// ============================================
-// MAIN FUNCTION
-// ============================================
 
 /**
  * Flatten CDC data (compound fields) sang Bulk API format (flat fields)
@@ -235,13 +224,11 @@ export const flattenCDCData = (
   const reverseMapping = buildReverseMapping(compoundFieldMapping);
 
   for (const [key, value] of Object.entries(cdcData)) {
-    // Nếu không phải compound field, copy trực tiếp
     if (!compoundFieldMapping[key]) {
       flatData[key] = value as string;
       continue;
     }
 
-    // Nếu là compound field và value là object
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       const flatFields = compoundFieldMapping[key];
 
@@ -249,37 +236,30 @@ export const flattenCDCData = (
         let subFieldValue: any = null;
         let shouldInclude = false;
 
-        // Kiểm tra có custom mapping không
         if (customSubFieldMapping[key]?.[flatField]) {
           const cdcFieldName = customSubFieldMapping[key][flatField];
-          // Chỉ include nếu field thực sự tồn tại trong CDC data
           if (cdcFieldName in value) {
             subFieldValue = (value[cdcFieldName] as string) ?? null;
             shouldInclude = true;
           }
         } else {
-          // Dùng auto-inference
           const { subField } = reverseMapping[flatField];
           const result = findMatchingKey(
             value as Record<string, any>,
             subField,
           );
 
-          // Chỉ include nếu field thực sự tồn tại trong CDC data
           if (result.exists) {
             subFieldValue = result.value as string;
             shouldInclude = true;
           }
         }
 
-        // CHỈ thêm vào flatData nếu field tồn tại trong CDC
         if (shouldInclude) {
           flatData[flatField] = subFieldValue as string;
         }
       });
     }
-    // Nếu compound field = null/undefined, KHÔNG tạo ra các flat fields
-    // Bỏ qua hoàn toàn
   }
 
   return flatData;

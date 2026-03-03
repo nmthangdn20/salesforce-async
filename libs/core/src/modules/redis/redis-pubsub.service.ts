@@ -20,9 +20,6 @@ export class RedisPubSubService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly redisClient: RedisClientService) {}
 
   onModuleInit(): void {
-    // pubClient is the shared client from RedisClientService — lifecycle managed there.
-    // subClient must be a dedicated connection: ioredis connections in subscribe mode
-    // cannot issue regular commands, so we create a separate one here.
     this.subClient = this.redisClient.createClient();
 
     this.subClient.on('message', (channel: string, message: string) => {

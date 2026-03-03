@@ -10,7 +10,7 @@ export type TBaseResponseDto<T = any> = {
   errorMessage?: string;
   errorCode?: number | string;
   statusCode?: number;
-  eventName?: string; // for socket
+  eventName?: string;
 };
 
 export type TResponseErrorDto<T = any> = Partial<TBaseResponseDto<T>>;

@@ -394,7 +394,6 @@ export class CdcGapHandlerService {
         where,
       );
 
-      // Track the latest LastModifiedDate across all returned records
       for (const row of rows) {
         const lmd = row['LastModifiedDate'];
         if (lmd && (!maxLastModifiedDate || lmd > maxLastModifiedDate)) {
