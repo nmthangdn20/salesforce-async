@@ -1,0 +1,48 @@
+{
+  "Name": [
+    "Name",
+    "LastName",
+    "FirstName",
+    "Salutation"
+  ],
+  "BillingAddress": [
+    "BillingStreet",
+    "BillingCity",
+    "BillingState",
+    "BillingPostalCode",
+    "BillingCountry",
+    "BillingLatitude",
+    "BillingLongitude",
+    "BillingGeocodeAccuracy"
+  ],
+  "ShippingAddress": [
+    "ShippingStreet",
+    "ShippingCity",
+    "ShippingState",
+    "ShippingPostalCode",
+    "ShippingCountry",
+    "ShippingLatitude",
+    "ShippingLongitude",
+    "ShippingGeocodeAccuracy"
+  ],
+  "PersonMailingAddress": [
+    "PersonMailingStreet",
+    "PersonMailingCity",
+    "PersonMailingState",
+    "PersonMailingPostalCode",
+    "PersonMailingCountry",
+    "PersonMailingLatitude",
+    "PersonMailingLongitude",
+    "PersonMailingGeocodeAccuracy"
+  ],
+  "PersonOtherAddress": [
+    "PersonOtherStreet",
+    "PersonOtherCity",
+    "PersonOtherState",
+    "PersonOtherPostalCode",
+    "PersonOtherCountry",
+    "PersonOtherLatitude",
+    "PersonOtherLongitude",
+    "PersonOtherGeocodeAccuracy"
+  ]
+}

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+COMMIT_MSG_FILE="$1"
+FIRST_LINE=$(head -n1 "$COMMIT_MSG_FILE")
+
+# Skip merge, squash, fixup commits
+if echo "$FIRST_LINE" | grep -Eq "^(Merge|fixup!|#)"; then
+  exit 0
+fi
+
+# Check if emoji is already present (very basic check)
+if echo "$FIRST_LINE" | grep -Eq "^[^[:alnum:]]{1,3} [a-z]+:"; then
+  exit 0
+fi
+
+# Extract type
+TYPE=$(echo "$FIRST_LINE" | sed -E 's/^([[:graph:]]+ )?([a-z]+):.*/\2/')
+
+# Map type to emoji
+get_emoji() {
+  case "$1" in
+    feat) echo "✨" ;;
+    fix) echo "🐛" ;;
+    docs) echo "📝" ;;
+    style) echo "💄" ;;
+    refactor) echo "♻️" ;;
+    perf) echo "⚡️" ;;
+    test) echo "✅" ;;
+    build) echo "🏗️" ;;
+    ci) echo "🔧" ;;
+    chore) echo "🧹" ;;
+    revert) echo "⏪" ;;
+    *) echo "" ;;
+  esac
+}
+
+EMOJI=$(get_emoji "$TYPE")
+if [ -n "$EMOJI" ]; then
+  UPDATED_LINE=$(echo "$FIRST_LINE" | sed -E "s/^($TYPE:)/$EMOJI $TYPE:/")
+  tail -n +2 "$COMMIT_MSG_FILE" > /tmp/msg_body
+  echo "$UPDATED_LINE" > "$COMMIT_MSG_FILE"
+  cat /tmp/msg_body >> "$COMMIT_MSG_FILE"
+  rm /tmp/msg_body
+fi

@@ -1,0 +1,6 @@
+{
+  "SUCCESS": "Thành công",
+  "UNAUTHORIZED": "Không được phép truy cập",
+  "FORBIDDEN": "Bị cấm truy cập",
+  "CATEGORY_DELETED_SUCCESSFULLY": "Xóa danh mục thành công"
+}

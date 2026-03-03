@@ -1,0 +1,39 @@
+{
+  "500": "Lỗi máy chủ nội bộ",
+
+  "1001": "Email đã tồn tại",
+  "1002": "Email hoặc mật khẩu không chính xác",
+  "1003": "OAuth callback thất bại",
+
+  "1011": "Người dùng không tồn tại",
+
+  "1021": "Vai trò không tồn tại",
+
+  "1031": "Bạn không có quyền truy cập",
+
+  "1041": "Định dạng file không hợp lệ. Vui lòng chỉ upload file .png, .jpg, .jpeg, .mp4. Vui lòng thử lại!",
+
+  "1051": "Dự án không tồn tại",
+
+  "1061": "Nguồn dữ liệu không tồn tại",
+
+  "1071": "Thành viên dự án không tồn tại",
+  "1072": "Thành viên dự án đã tồn tại",
+
+  "1081": "Cài đặt nguồn dữ liệu không tồn tại",
+  "1082": "Cài đặt nguồn dữ liệu đã tồn tại",
+
+  "1091": "Đích không tồn tại",
+
+  "1101": "Ánh xạ đối tượng không tồn tại",
+  "1102": "Ánh xạ đối tượng đã tồn tại cho source, object và target này",
+  "1103": "Ánh xạ trường không tồn tại",
+  "1104": "Ánh xạ trường đã tồn tại cho object mapping và field này",
+  "1105": "Không tìm thấy catalog fields",
+  "1106": "Tất cả các field đã được chọn đều đã được map",
+
+  "1201": "Sync job đã tồn tại cho cặp source-target này",
+  "1202": "Sync job không tồn tại",
+  "1203": "Sync job đang chạy",
+  "1204": "Sync run không tồn tại"
+}

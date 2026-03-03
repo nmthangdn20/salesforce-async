@@ -1,0 +1,28 @@
+{
+  "filename": "salesforce.config.json",
+  "instanceUrl": "https://your-org.sandbox.my.salesforce.com",
+  "clientId": "YOUR_CLIENT_ID",
+  "clientSecret": "YOUR_CLIENT_SECRET",
+  "scopes": ["api", "refresh_token", "offline_access"],
+  "accessToken": "",
+  "refreshToken": "",
+  "expiresAt": "",
+  "tenantId": "",
+  "databaseConfig": {
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "YOUR_DB_PASSWORD",
+    "database": "salesforce",
+    "schema": "public"
+  },
+  "objects": [
+    {
+      "name": "Account",
+      "apiName": "Account",
+      "cdcTopic": "/data/AccountChangeEvent",
+      "fieldNames": ["Id", "Name", "PersonEmail"]
+    }
+  ]
+}

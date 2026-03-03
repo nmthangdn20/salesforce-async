@@ -1,0 +1,275 @@
+// ============================================================================
+// Prisma Client & DB
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS
+model users {
+  id          String    @id @default(uuid()) @db.Uuid
+  email       String    @unique
+  name        String
+  avatar_url  String?
+  status      String    @default("active")   // 'active'|'disabled'
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  project_members project_members[]
+}
+
+// ============================================================================
+// CORE
+model projects {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String?   @unique
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  project_members project_members[]
+  sources         sources[]
+  targets         targets[]
+}
+
+model project_members {
+  id          String    @id @default(uuid()) @db.Uuid
+  project_id  String    @db.Uuid
+  user_id     String    @db.Uuid
+  role        String    // 'owner'|'admin'|'editor'|'viewer'
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  projects projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  users    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, user_id])
+  @@index([project_id], name: "idx_project_members_project")
+  @@index([user_id], name: "idx_project_members_user")
+}
+
+// ============================================================================
+// SOURCES
+model sources {
+  id             String    @id @default(uuid()) @db.Uuid
+  project_id     String    @db.Uuid
+  provider       String    // 'salesforce','hubspot','custom',...
+  name           String
+  environment    String    @default("prod")     // 'prod'|'sandbox'|'dev'
+  status         String    @default("active")   // 'active'|'disabled'
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  projects           projects            @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  source_setting     source_setting?
+  sf_objects_catalog sf_objects_catalog[]
+  object_mappings    object_mappings[]
+  sync_jobs          sync_jobs[]
+
+  @@index([project_id], name: "idx_sources_project")
+  @@index([project_id, status], name: "idx_sources_project_status")
+  @@index([project_id, environment], name: "idx_sources_project_env")
+}
+
+model source_setting {
+  id            String    @id @default(uuid()) @db.Uuid
+  source_id     String    @unique @db.Uuid     // enforce 1-1 per source
+  instance_url  String
+  auth_type     String    @default("oauth2")   // 'oauth2'|'api_key'|'basic'
+  scopes        String[]
+  secrets_ref   String    // pointer to Vault/KMS
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sources sources @relation(fields: [source_id], references: [id], onDelete: Cascade)
+
+  @@index([source_id], name: "idx_source_setting_source")
+}
+
+// ============================================================================
+// TARGETS
+model targets {
+  id                 String               @id @default(uuid()) @db.Uuid
+  project_id         String               @db.Uuid
+  kind               String               // 'postgres','mysql','sqlserver','bigquery','snowflake','clickhouse','mongodb',...
+  name               String
+  created_at         DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime             @updatedAt @db.Timestamptz(6)
+
+  // relations
+  projects           projects             @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  target_connections target_connections[]
+  object_mappings    object_mappings[]
+  sync_jobs          sync_jobs[]
+
+  @@index([project_id], name: "idx_targets_project")
+}
+
+model target_connections {
+  id            String    @id @default(uuid()) @db.Uuid
+  target_id     String    @db.Uuid
+  connect_info  Json
+  secrets_ref   String
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  targets targets @relation(fields: [target_id], references: [id], onDelete: Cascade)
+
+  @@index([target_id], name: "idx_target_connections_target")
+}
+
+// ============================================================================
+// SALESFORCE CATALOG
+model sf_objects_catalog {
+  id            String     @id @default(uuid()) @db.Uuid
+  source_id     String     @db.Uuid
+  api_name      String
+  label         String?
+  is_selected   Boolean    @default(false)
+  selected_by   String?    // user_id
+  selected_at   DateTime?  @db.Timestamptz(6)
+  created_at    DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime   @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sources            sources            @relation(fields: [source_id], references: [id], onDelete: Cascade)
+  sf_fields_catalog  sf_fields_catalog[]
+
+  @@unique([source_id, api_name])
+  @@index([source_id], name: "idx_sf_objects_source")
+  @@index([source_id, is_selected], name: "idx_sf_objects_selected")
+}
+
+model sf_fields_catalog {
+  id              String     @id @default(uuid()) @db.Uuid
+  object_id       String     @db.Uuid
+  api_name        String
+  label           String?
+  sf_type         String
+  is_required     Boolean?
+  length          Int?
+  precision       Int?
+  scale           Int?
+  is_selected     Boolean    @default(false)
+  selected_by     String?
+  selected_at     DateTime?  @db.Timestamptz(6)
+  created_at      DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime   @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sf_objects_catalog sf_objects_catalog @relation(fields: [object_id], references: [id], onDelete: Cascade)
+
+  @@unique([object_id, api_name])
+  @@index([object_id], name: "idx_sf_fields_object")
+  @@index([object_id, is_selected], name: "idx_sf_fields_selected")
+}
+
+// ============================================================================
+// MAPPING (SF -> Target)
+model object_mappings {
+  id                String     @id @default(uuid()) @db.Uuid
+  source_id         String     @db.Uuid
+  object_api_name   String
+  target_id         String     @db.Uuid
+  target_table      String
+  pk_strategy       String     @default("sf_id")
+  created_at        DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime   @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sources sources @relation(fields: [source_id], references: [id], onDelete: Cascade)
+  targets targets @relation(fields: [target_id], references: [id], onDelete: Cascade)
+
+  field_mappings field_mappings[]
+
+  @@unique([source_id, object_api_name, target_id])
+  @@index([source_id], name: "idx_objmap_source")
+  @@index([target_id], name: "idx_objmap_target")
+}
+
+model field_mappings {
+  id                   String    @id @default(uuid()) @db.Uuid
+  object_mapping_id    String    @db.Uuid
+  sf_field_api_name    String
+  target_column        String
+  logical_type         String
+  target_type_override String?
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  object_mappings object_mappings @relation(fields: [object_mapping_id], references: [id], onDelete: Cascade)
+
+  @@unique([object_mapping_id, sf_field_api_name])
+  @@index([object_mapping_id], name: "idx_fieldmap_objmap")
+}
+
+// ============================================================================
+// TYPE DICTIONARY
+model type_dictionary {
+  id              String   @id @default(uuid()) @db.Uuid
+  sf_type         String
+  logical_type    String
+  pg_type         String?
+  mysql_type      String?
+  sqlserver_type  String?
+  bigquery_type   String?
+  snowflake_type  String?
+  clickhouse_type String?
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([sf_type], name: "idx_typedict_sf_type")
+  @@unique([sf_type, logical_type], name: "uq_typedict_sf_logical")
+}
+
+// ============================================================================
+// JOBS / RUNS
+model sync_jobs {
+  id            String    @id @default(uuid()) @db.Uuid
+  source_id     String    @db.Uuid
+  target_id     String    @db.Uuid
+  type          String
+  schedule_cron String?
+  status        String    @default("idle")
+  last_run_at   DateTime? @db.Timestamptz(6)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sources  sources  @relation(fields: [source_id], references: [id], onDelete: Cascade)
+  targets  targets  @relation(fields: [target_id], references: [id], onDelete: Cascade)
+  sync_runs sync_runs[]
+
+  @@index([source_id, target_id], name: "idx_jobs_source_target")
+  @@index([status], name: "idx_jobs_status")
+}
+
+model sync_runs {
+  id           String    @id @default(uuid()) @db.Uuid
+  job_id       String    @db.Uuid
+  started_at   DateTime  @default(now()) @db.Timestamptz(6)
+  finished_at  DateTime? @db.Timestamptz(6)
+  status       String?
+  metrics      Json?
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
+
+  // relations
+  sync_jobs sync_jobs @relation(fields: [job_id], references: [id], onDelete: Cascade)
+
+  @@index([job_id, started_at], map: "idx_runs_job_time")
+  @@index([job_id], name: "idx_runs_job")
+  @@index([status, started_at], name: "idx_runs_status_time")
+}

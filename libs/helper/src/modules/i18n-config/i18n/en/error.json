@@ -1,0 +1,39 @@
+{
+  "500": "Internal server error",
+
+  "1001": "Email already exists",
+  "1002": "Email or password incorrect",
+  "1003": "OAuth callback failed",
+
+  "1011": "User not found",
+
+  "1021": "Role not found",
+
+  "1031": "You do not have permission",
+
+  "1041": "File format is not supported. Only upload .png, .jpg, .jpeg, .mp4 file format. Please try again!",
+
+  "1051": "Project not found",
+
+  "1061": "Source not found",
+
+  "1071": "Project member not found",
+  "1072": "Project member already exists",
+
+  "1081": "Source setting not found",
+  "1082": "Source setting already exists",
+
+  "1091": "Target not found",
+
+  "1101": "Object mapping not found",
+  "1102": "Object mapping already exists for this source, object, and target combination",
+  "1103": "Field mapping not found",
+  "1104": "Field mapping already exists for this object mapping and field",
+  "1105": "No catalog fields found",
+  "1106": "All selected fields have already been mapped",
+
+  "1201": "Sync job already exists for this source-target pair",
+  "1202": "Sync job not found",
+  "1203": "Sync job is already running",
+  "1204": "Sync run not found"
+}

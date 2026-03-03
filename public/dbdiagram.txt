@@ -1,0 +1,214 @@
+Table User {
+  id        uuid [pk]
+  email     varchar [unique]
+  password  varchar
+  status    varchar
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table Profile {
+  id        uuid [pk]
+  userId    uuid [unique]
+  firstName varchar
+  lastName  varchar
+  phone     varchar
+  avatar    varchar
+  gender    varchar
+  dob       datetime
+  bio       text
+  address   varchar
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table Role {
+  id          uuid [pk]
+  name        varchar
+  description varchar
+  createdAt   datetime
+  updatedAt   datetime
+}
+
+Table Permission {
+  id          uuid [pk]
+  code        int
+  key         varchar
+  name        varchar
+  description varchar
+  module      varchar
+  createdAt   datetime
+  updatedAt   datetime
+}
+
+Table UserRole {
+  userId uuid [pk]
+  roleId uuid [pk]
+}
+
+Table UserPermission {
+  userId       uuid [pk]
+  permissionId uuid [pk]
+}
+
+Table RolePermission {
+  roleId       uuid [pk]
+  permissionId uuid [pk]
+}
+
+
+Table Category {
+  id          uuid [pk]
+  name        varchar
+  slug        varchar
+  description varchar
+  createdAt   datetime
+  updatedAt   datetime
+}
+
+Table Product {
+  id            uuid [pk]
+  name          varchar
+  slug          varchar
+  sku           varchar
+  keywords      varchar
+  description   varchar
+  price         float
+  discount      float
+  stock         int
+  status        varchar
+  createdAt     datetime
+  updatedAt     datetime
+}
+
+Table ProductOnCategory {
+  categoryId uuid
+  productId  uuid
+  createdAt  datetime
+}
+
+Table Order {
+  id         uuid [pk]
+  userId     uuid
+  status     varchar
+  total      float
+  note       varchar
+  noteAdmin  varchar
+  createdAt  datetime
+  updatedAt  datetime
+}
+
+Table OrderItem {
+  id        uuid [pk]
+  orderId   uuid
+  productId uuid
+  quantity  int
+  price     float
+  discount  float
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table Cart {
+  id        uuid [pk]
+  userId    uuid
+  productId uuid
+  quantity  int
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table File {
+  id        uuid [pk]
+  name      varchar
+  url       varchar
+  type      varchar
+  size      int
+  userId    uuid
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table ProductImage {
+  id        uuid [pk]
+  productId uuid
+  fileId    uuid
+  sortOrder int
+}
+
+Table VariantLabel {
+  id         uuid [pk]
+  name       varchar         // e.g. "Color", "Size"
+  isGlobal   boolean         // dùng chung hay riêng cho user
+  createdBy  uuid            // User.id
+  createdAt  datetime
+  updatedAt  datetime
+}
+
+Table VariantOption {
+  id             uuid [pk]
+  name           varchar         // e.g. "Red", "M"
+  variantLabelId uuid
+  createdAt      datetime
+  updatedAt      datetime
+}
+
+Table ProductVariant {
+  id         uuid [pk]
+  productId  uuid
+  sku        varchar [unique]
+  price      float
+  discount   float
+  stock      int
+  status     varchar
+  createdAt  datetime
+  updatedAt  datetime
+}
+
+Table ProductVariantOption {
+  id               uuid [pk]
+  productVariantId uuid
+  variantOptionId  uuid
+}
+
+Ref: "User"."id" < "UserRole"."userId"
+
+Ref: "User"."id" < "UserPermission"."userId"
+
+Ref: "User"."id" < "Order"."userId"
+
+Ref: "User"."id" < "Profile"."id"
+
+Ref: "Cart"."productId" < "Product"."id"
+
+Ref: "User"."id" < "Cart"."userId"
+
+Ref: "Order"."id" < "OrderItem"."orderId"
+
+Ref: "Product"."id" < "OrderItem"."productId"
+
+Ref: "User"."id" < "File"."userId"
+
+Ref: "Product"."id" < "ProductImage"."productId"
+
+Ref: "Role"."id" < "RolePermission"."roleId"
+
+Ref: "Permission"."id" < "RolePermission"."permissionId"
+
+Ref: "Permission"."id" < "UserPermission"."permissionId"
+
+Ref: "Role"."id" < "UserRole"."roleId"
+
+Ref: "Category"."id" < "ProductOnCategory"."categoryId"
+
+Ref: "Product"."id" < "ProductOnCategory"."productId"
+
+Ref: "File"."id" < "ProductImage"."fileId"
+
+Ref: "VariantLabel"."id" < "VariantOption"."variantLabelId"
+
+Ref: "Product"."id" < "ProductVariant"."productId"
+
+Ref: "ProductVariant"."id" < "ProductVariantOption"."productVariantId"
+
+Ref: "VariantOption"."id" < "ProductVariantOption"."variantOptionId"
