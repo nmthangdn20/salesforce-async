@@ -12,7 +12,7 @@ import {
   QUEUE_NAMES,
 } from '@app/shared/constants/queue-name.constant';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { parse as parseCsv } from 'fast-csv';
 import { readFileSync } from 'fs';
@@ -36,7 +36,7 @@ import { chunkArray } from 'src/utils/utils';
 import { Readable } from 'stream';
 
 @Injectable()
-export class SalesforceAsyncService {
+export class SalesforceAsyncService implements OnModuleInit {
   private readonly logger = new Logger(SalesforceAsyncService.name);
   private readonly compoundFieldMappingMap: Map<
     string,
@@ -44,6 +44,20 @@ export class SalesforceAsyncService {
   > = new Map();
   /** Cache config by filename to avoid reading file on every CDC/Gap call. */
   private readonly configCache = new Map<string, TSalesforceConfig>();
+  /** Cache describe fields per object API name, expires after 10 minutes. */
+  private readonly fieldsCache = new Map<
+    string,
+    {
+      fields: {
+        name: string;
+        typeSql: string;
+        required: boolean;
+        primaryKey: boolean;
+      }[];
+      expiresAt: number;
+    }
+  >();
+  private static readonly FIELDS_CACHE_TTL_MS = 10 * 60 * 1000;
 
   constructor(
     private readonly salesforceService: SalesforceService,
@@ -53,8 +67,15 @@ export class SalesforceAsyncService {
     private readonly dirtyRecordService: DirtyRecordService,
     @InjectQueue(QUEUE_NAMES.CDC) private readonly cdcQueue: Queue,
     @InjectQueue(QUEUE_NAMES.GAP) private readonly gapQueue: Queue,
-  ) {
-    void this.cdc('salesforce.config.json');
+  ) {}
+
+  onModuleInit(): void {
+    this.cdc('salesforce.config.json').catch((err: unknown) => {
+      this.logger.error(
+        `Failed to initialize CDC subscription: ${err instanceof Error ? err.message : String(err)}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+    });
   }
 
   /**
@@ -117,6 +138,9 @@ export class SalesforceAsyncService {
   }
 
   async getFields(connection: Connection, object: TObject) {
+    const cached = this.fieldsCache.get(object.apiName);
+    if (cached && Date.now() < cached.expiresAt) return cached.fields;
+
     const data = await this.salesforceService.describe(
       connection,
       object.apiName,
@@ -141,6 +165,11 @@ export class SalesforceAsyncService {
         required: field.nillable === false,
         primaryKey: field.type === 'id',
       }));
+
+    this.fieldsCache.set(object.apiName, {
+      fields,
+      expiresAt: Date.now() + SalesforceAsyncService.FIELDS_CACHE_TTL_MS,
+    });
 
     return fields;
   }
@@ -290,6 +319,7 @@ export class SalesforceAsyncService {
             resolve(rows);
           });
 
+        readable.on('error', (err) => reject(err));
         readable.pipe(csvStream);
       },
     );
@@ -347,7 +377,15 @@ export class SalesforceAsyncService {
 
             // Mark records dirty as soon as we receive the gap (before job runs) so any
             // CDC event for these records is skipped until reconciliation completes.
-            if (gapInfo.type === 'NORMAL') {
+            if (gapInfo.type === 'FULL_RESYNC') {
+              this.dirtyRecordService
+                .addDirtyAll(filename, gapInfo.objectName)
+                .catch((err: unknown) => {
+                  this.logger.error(
+                    `Failed to mark dirty-all for FULL_RESYNC ${gapInfo.objectName}: ${err instanceof Error ? err.message : String(err)}`,
+                  );
+                });
+            } else if (gapInfo.type === 'NORMAL') {
               if (gapInfo.recordIds && gapInfo.recordIds.length > 0) {
                 this.dirtyRecordService
                   .addDirty(filename, gapInfo.objectName, gapInfo.recordIds)
@@ -368,7 +406,6 @@ export class SalesforceAsyncService {
             }
 
             const payload: GapJobPayload = {
-              events: serialized,
               gapInfo,
               filename,
               tenantId: salesforceConfig.tenantId ?? '',

@@ -1,5 +1,5 @@
 import { RedisClientService } from '@app/core/modules/redis';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 /**
  * Tracks records marked as "dirty" after a gap event (per Salesforce "How to Handle a Gap Event").
@@ -21,6 +21,7 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class DirtyRecordService {
+  private readonly logger = new Logger(DirtyRecordService.name);
   /** Safety-net TTL: dirty flags are auto-expired after 1 hour. */
   private static readonly TTL_SECONDS = 3600;
 
@@ -92,9 +93,15 @@ export class DirtyRecordService {
     }
 
     const results = await pipeline.exec();
-    return ids.filter((_, i) => {
+    return ids.filter((id, i) => {
       const [err, val] = (results ?? [])[i] as [Error | null, unknown];
-      return !!err || val !== 1;
+      if (err) {
+        this.logger.warn(
+          `Redis pipeline error for ${objectName}:${id}, treating as clean: ${err.message}`,
+        );
+        return true;
+      }
+      return val !== 1;
     });
   }
 }

@@ -10,7 +10,6 @@ export interface CdcJobPayload {
 }
 
 export interface GapJobPayload {
-  events: SerializedParseEvent[];
   gapInfo: GapInfo;
   filename: string;
   tenantId: string;

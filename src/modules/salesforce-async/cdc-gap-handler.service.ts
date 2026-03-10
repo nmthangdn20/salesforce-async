@@ -178,17 +178,27 @@ export class CdcGapHandlerService {
       // Per Salesforce docs: "compare the LastModifiedDate fields on the change
       // event and the record retrieved" to ensure the change is covered.
       if (maxLmd) {
-        const catchupWhere = `${this.buildIdInWhereClause(recordIds)} AND LastModifiedDate > ${maxLmd}`;
         this.logger.debug(
           `Catch-up sync for ${gapInfo.objectName} with LastModifiedDate > ${maxLmd}`,
         );
-        await this.salesforceAsyncService.syncRecord(
-          repo,
-          connection,
-          gapInfo.objectName,
-          fields,
-          catchupWhere,
-        );
+        for (
+          let i = 0;
+          i < recordIds.length;
+          i += CdcGapHandlerService.SOQL_IN_BATCH_SIZE
+        ) {
+          const chunk = recordIds.slice(
+            i,
+            i + CdcGapHandlerService.SOQL_IN_BATCH_SIZE,
+          );
+          const catchupWhere = `${this.buildIdInWhereClause(chunk)} AND LastModifiedDate > ${maxLmd}`;
+          await this.salesforceAsyncService.syncRecord(
+            repo,
+            connection,
+            gapInfo.objectName,
+            fields,
+            catchupWhere,
+          );
+        }
       }
 
       await this.dirtyRecordService.removeDirty(
@@ -302,6 +312,8 @@ export class CdcGapHandlerService {
         );
       }
     }
+
+    await this.dirtyRecordService.removeDirtyAll(filename, gapInfo.objectName);
 
     this.logger.log(`Full resync completed for ${gapInfo.objectName}`);
 
