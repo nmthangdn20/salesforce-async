@@ -1,4 +1,5 @@
 import { RedisPubSubService } from '@app/core/modules/redis';
+import { SalesforceGrpcService } from '@app/helper/modules/salesforce/salesforce-grpc.service';
 import {
   GAP_JOB_NAMES,
   QUEUE_NAMES,
@@ -22,6 +23,7 @@ export class GapProcessor extends WorkerHost {
   constructor(
     private readonly handler: CdcGapHandlerService,
     private readonly redisPubSub: RedisPubSubService,
+    private readonly grpcService: SalesforceGrpcService,
   ) {
     super();
   }
@@ -42,11 +44,8 @@ export class GapProcessor extends WorkerHost {
         await this.handler.handleFullResync(gapInfo, filename, {
           tenantId,
           topicName,
-          onResume: (tid, tname) => {
-            void this.publishWithRetry(
-              STREAM_RESUME_CHANNEL,
-              JSON.stringify({ tenantId: tid, topicName: tname }),
-            );
+          onResume: async (tid, tname) => {
+            await this.publishOrResumeDirect(tid, tname);
           },
         });
         break;
@@ -56,6 +55,38 @@ export class GapProcessor extends WorkerHost {
     }
 
     return { processed: true, gapType: gapInfo.type };
+  }
+
+  /**
+   * Try Redis publish first; if it fails after all retries, try to resume stream
+   * directly in this process (works when worker runs in same process as gRPC subscriber).
+   */
+  private async publishOrResumeDirect(
+    tenantId: string,
+    topicName: string,
+  ): Promise<void> {
+    try {
+      await this.publishWithRetry(
+        STREAM_RESUME_CHANNEL,
+        JSON.stringify({ tenantId, topicName }),
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Redis publish failed, attempting direct stream resume for ${tenantId}/${topicName}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      try {
+        await this.grpcService.resumeStream(tenantId, topicName);
+        this.logger.log(
+          `Stream resumed directly (Redis publish had failed for ${tenantId}/${topicName})`,
+        );
+      } catch (resumeErr) {
+        this.logger.error(
+          `Direct resume also failed: ${resumeErr instanceof Error ? resumeErr.message : String(resumeErr)}`,
+          resumeErr instanceof Error ? resumeErr.stack : undefined,
+        );
+        throw resumeErr;
+      }
+    }
   }
 
   private async publishWithRetry(
@@ -87,10 +118,12 @@ export class GapProcessor extends WorkerHost {
         return this.publishWithRetry(channel, message, attempt + 1);
       }
 
+      const errorMessage = `Failed to publish stream resume after ${attempt} attempt(s): ${err instanceof Error ? err.message : String(err)}`;
       this.logger.error(
-        `Failed to publish stream resume after ${attempt} attempt(s): ${err instanceof Error ? err.message : String(err)}`,
+        errorMessage,
         err instanceof Error ? err.stack : undefined,
       );
+      throw new Error(errorMessage);
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   buildCreateTableSql,
   getDbColumnTypeSig,
   normalizeType,
+  quoteIdentifier,
 } from './utils';
 
 const poolMap = new Map<string, Pool>();
@@ -143,9 +144,9 @@ export class DbService implements OnModuleDestroy {
 
     const setClause = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
     const query = `
-      UPDATE "${table}"
+      UPDATE ${quoteIdentifier(table)}
       SET ${setClause}
-      WHERE "id" = $${keys.length + 1}
+      WHERE "Id" = $${keys.length + 1}
     `;
 
     const params = keys.map((k) => data[k]).concat(id);
@@ -173,7 +174,7 @@ export class DbService implements OnModuleDestroy {
       .join(', ');
 
     const query = `
-      INSERT INTO "${table}" (${keys.map((k) => `"${String(k)}"`).join(', ')})
+      INSERT INTO ${quoteIdentifier(table)} (${keys.map((k) => `"${String(k)}"`).join(', ')})
       VALUES ${placeholders}
     `;
 
@@ -215,7 +216,7 @@ export class DbService implements OnModuleDestroy {
         : `ON CONFLICT ("Id") DO UPDATE SET ${setClause}`;
 
     const query = `
-      INSERT INTO "${table}" (${keys.map((k) => `"${String(k)}"`).join(', ')})
+      INSERT INTO ${quoteIdentifier(table)} (${keys.map((k) => `"${String(k)}"`).join(', ')})
       VALUES ${placeholders}
       ${onConflictClause}
     `;
@@ -229,7 +230,7 @@ export class DbService implements OnModuleDestroy {
     ids: string[],
   ): Promise<void> {
     const query = `
-      UPDATE "${table}"
+      UPDATE ${quoteIdentifier(table)}
       SET "IsDeleted" = true
       WHERE "Id" = ANY($1)
     `;
@@ -243,7 +244,7 @@ export class DbService implements OnModuleDestroy {
     ids: string[],
   ): Promise<void> {
     const query = `
-      UPDATE "${table}"
+      UPDATE ${quoteIdentifier(table)}
       SET "IsDeleted" = false
       WHERE "Id" = ANY($1)
     `;
@@ -261,7 +262,7 @@ export class DbService implements OnModuleDestroy {
   ): Promise<string[]> {
     if (!ids?.length) return [];
     const query = `
-      SELECT "Id" FROM "${table}"
+      SELECT "Id" FROM ${quoteIdentifier(table)}
       WHERE "Id" = ANY($1)
     `;
     const rows = await repo.query<{ Id: string }>(query, [ids]);
@@ -284,7 +285,7 @@ export class DbService implements OnModuleDestroy {
     const idsParamIndex = keys.length + 1;
 
     const query = `
-      UPDATE "${table}"
+      UPDATE ${quoteIdentifier(table)}
       SET ${setClause}
       WHERE "Id" = ANY($${idsParamIndex})
     `;

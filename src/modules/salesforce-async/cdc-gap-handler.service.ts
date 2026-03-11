@@ -14,7 +14,7 @@ export type GapHandleOptions = {
   tenantId: string;
   topicName: string;
   /** Called when FULL_RESYNC completes so main process can resume stream (e.g. Redis publish) */
-  onResume?: (tenantId: string, topicName: string) => void;
+  onResume?: (tenantId: string, topicName: string) => Promise<void>;
 };
 
 @Injectable()
@@ -317,7 +317,7 @@ export class CdcGapHandlerService {
 
     this.logger.log(`Full resync completed for ${gapInfo.objectName}`);
 
-    opts.onResume?.(opts.tenantId, opts.topicName);
+    await opts.onResume?.(opts.tenantId, opts.topicName);
   }
 
   private async resolveSetup(

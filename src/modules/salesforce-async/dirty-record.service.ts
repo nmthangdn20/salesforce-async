@@ -1,5 +1,6 @@
 import { RedisClientService } from '@app/core/modules/redis';
 import { Injectable, Logger } from '@nestjs/common';
+import { chunkArray } from 'src/utils/utils';
 
 /**
  * Tracks records marked as "dirty" after a gap event (per Salesforce "How to Handle a Gap Event").
@@ -24,6 +25,7 @@ export class DirtyRecordService {
   private readonly logger = new Logger(DirtyRecordService.name);
   /** Safety-net TTL: dirty flags are auto-expired after 1 hour. */
   private static readonly TTL_SECONDS = 3600;
+  private static readonly SADD_CHUNK_SIZE = 500;
 
   constructor(private readonly redisClient: RedisClientService) {}
 
@@ -43,7 +45,9 @@ export class DirtyRecordService {
     const ids = recordIds.filter(Boolean);
     if (ids.length === 0) return;
     const k = this.recordKey(filename, objectName);
-    await this.redisClient.sadd(k, ...ids);
+    for (const chunk of chunkArray(ids, DirtyRecordService.SADD_CHUNK_SIZE)) {
+      await this.redisClient.sadd(k, ...chunk);
+    }
     await this.redisClient.expire(k, DirtyRecordService.TTL_SECONDS);
   }
 
@@ -55,7 +59,9 @@ export class DirtyRecordService {
     const ids = recordIds.filter(Boolean);
     if (ids.length === 0) return;
     const k = this.recordKey(filename, objectName);
-    await this.redisClient.srem(k, ...ids);
+    for (const chunk of chunkArray(ids, DirtyRecordService.SADD_CHUNK_SIZE)) {
+      await this.redisClient.srem(k, ...chunk);
+    }
   }
 
   async addDirtyAll(filename: string, objectName: string): Promise<void> {

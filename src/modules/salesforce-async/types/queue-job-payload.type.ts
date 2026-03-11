@@ -15,3 +15,7 @@ export interface GapJobPayload {
   tenantId: string;
   topicName: string;
 }
+
+export interface SyncJobPayload {
+  filename: string;
+}

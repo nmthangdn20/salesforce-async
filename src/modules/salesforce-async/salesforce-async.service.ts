@@ -8,8 +8,15 @@ import {
 } from '@app/helper/modules/salesforce/types/grpc.types';
 import { ERROR_MESSAGES } from '@app/shared/constants/error.constant';
 import {
+  CDC_JOB_OPTIONS,
+  GAP_FULL_RESYNC_JOB_OPTIONS,
+  GAP_NORMAL_JOB_OPTIONS,
+  SYNC_DATA_JOB_OPTIONS,
+} from '@app/shared/constants/queue-job-options.constant';
+import {
   GAP_JOB_NAMES,
   QUEUE_NAMES,
+  SYNC_JOB_NAMES,
 } from '@app/shared/constants/queue-name.constant';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
@@ -25,6 +32,7 @@ import { DirtyRecordService } from 'src/modules/salesforce-async/dirty-record.se
 import type {
   CdcJobPayload,
   GapJobPayload,
+  SyncJobPayload,
 } from 'src/modules/salesforce-async/types/queue-job-payload.type';
 import {
   TObject,
@@ -67,6 +75,7 @@ export class SalesforceAsyncService implements OnModuleInit {
     private readonly dirtyRecordService: DirtyRecordService,
     @InjectQueue(QUEUE_NAMES.CDC) private readonly cdcQueue: Queue,
     @InjectQueue(QUEUE_NAMES.GAP) private readonly gapQueue: Queue,
+    @InjectQueue(QUEUE_NAMES.SALESFORCE_SYNC) private readonly syncQueue: Queue,
   ) {}
 
   onModuleInit(): void {
@@ -114,27 +123,41 @@ export class SalesforceAsyncService implements OnModuleInit {
     });
   }
 
-  async syncData(filename: string) {
-    const salesforceConfig = await this.getSalesforceConfigValidated(filename);
-    const connection = this.createConnection(salesforceConfig);
+  async syncData(filename: string): Promise<void> {
+    try {
+      const salesforceConfig =
+        await this.getSalesforceConfigValidated(filename);
+      const connection = this.createConnection(salesforceConfig);
 
-    const dbRepo = this.dbService.getRepo(
-      salesforceConfig.databaseConfig,
-      'salesforce-async',
-    );
+      const dbRepo = this.dbService.getRepo(
+        salesforceConfig.databaseConfig,
+        'salesforce-async',
+      );
 
-    for (const object of salesforceConfig.objects) {
-      const fields = await this.getFields(connection, object);
+      for (const object of salesforceConfig.objects) {
+        const fields = await this.getFields(connection, object);
 
-      await this.syncObject(dbRepo, connection, object);
+        await this.syncObject(dbRepo, connection, object);
 
-      await this.syncRecord(dbRepo, connection, object.apiName, fields);
+        await this.syncRecord(dbRepo, connection, object.apiName, fields);
 
-      // Vacuum to reclaim dead tuples space after upsert
-      // this.logger.log(`Running VACUUM on ${object.name} table...`);
-      // await dbRepo.execute(`VACUUM "${object.name}"`);
-      // this.logger.log(`VACUUM completed for ${object.name}`);
+        // Vacuum to reclaim dead tuples space after upsert
+        // this.logger.log(`Running VACUUM on ${object.name} table...`);
+        // await dbRepo.execute(`VACUUM "${object.name}"`);
+        // this.logger.log(`VACUUM completed for ${object.name}`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to sync data for ${filename}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
     }
+  }
+
+  async enqueueSyncData(filename: string): Promise<void> {
+    const payload: SyncJobPayload = { filename };
+    await this.syncQueue.add(SYNC_JOB_NAMES.SYNC_DATA, payload, SYNC_DATA_JOB_OPTIONS);
   }
 
   async getFields(connection: Connection, object: TObject) {
@@ -368,7 +391,7 @@ export class SalesforceAsyncService implements OnModuleInit {
                 object,
                 filename,
               };
-              return void this.cdcQueue.add('cdc', payload).catch((err) => {
+              return void this.cdcQueue.add('cdc', payload, CDC_JOB_OPTIONS).catch((err) => {
                 this.logger.error(
                   `Failed to add CDC job for ${object.apiName}: ${err instanceof Error ? err.message : String(err)}`,
                 );
@@ -419,7 +442,12 @@ export class SalesforceAsyncService implements OnModuleInit {
                   ? GAP_JOB_NAMES.NORMAL_WITH_IDS
                   : GAP_JOB_NAMES.NORMAL_WITHOUT_IDS;
 
-            return void this.gapQueue.add(jobName, payload).catch((err) => {
+            const jobOptions =
+              gapInfo.type === 'FULL_RESYNC'
+                ? GAP_FULL_RESYNC_JOB_OPTIONS
+                : GAP_NORMAL_JOB_OPTIONS;
+
+            return void this.gapQueue.add(jobName, payload, jobOptions).catch((err) => {
               this.logger.error(
                 `Failed to add GAP job for ${object.apiName}: ${err instanceof Error ? err.message : String(err)}`,
               );

@@ -12,7 +12,8 @@ export class SalesforceAsyncController {
 
   @Post('sync-data')
   async syncData(@Body() body: SyncDataDto) {
-    return this.salesforceAsyncService.syncData(body.filename);
+    await this.salesforceAsyncService.enqueueSyncData(body.filename);
+    return { queued: true };
   }
 
   @Post('cdc')

@@ -13,3 +13,9 @@ export const GAP_JOB_NAMES = {
 } as const;
 
 export type GapJobName = (typeof GAP_JOB_NAMES)[keyof typeof GAP_JOB_NAMES];
+
+export const SYNC_JOB_NAMES = {
+  SYNC_DATA: 'sync-data',
+} as const;
+
+export type SyncJobName = (typeof SYNC_JOB_NAMES)[keyof typeof SYNC_JOB_NAMES];
