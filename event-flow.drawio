@@ -1,104 +1,116 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.3.8">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.3">
   <diagram id="cPIRpVlrV_CMNQDwbCdQ" name="Page-1">
-    <mxGraphModel dx="2751" dy="585" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2339" math="0" shadow="0">
+    <mxGraphModel dx="976" dy="634" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2739" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="layer-grpc-label" parent="1" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;" value="SalesforceGrpcService" vertex="1">
+          <mxGeometry height="25" width="200" x="700" y="10" as="geometry" />
+        </mxCell>
         <mxCell id="sf-cloud" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#666666;fontStyle=1;fontSize=13;" value="Salesforce Cloud" vertex="1">
-          <mxGeometry height="60" width="180" x="597" y="30" as="geometry" />
+          <mxGeometry height="60" width="180" x="697" y="55" as="geometry" />
         </mxCell>
         <mxCell id="grpc-stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="gRPC Stream nhận data&#xa;(SalesforceGrpcService)" vertex="1">
-          <mxGeometry height="55" width="180" x="597" y="140" as="geometry" />
+          <mxGeometry height="55" width="180" x="697" y="165" as="geometry" />
         </mxCell>
         <mxCell id="ea1" edge="1" parent="1" source="sf-cloud" style="edgeStyle=orthogonalEdgeStyle;" target="grpc-stream">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="handle-stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="handleStreamData()" vertex="1">
-          <mxGeometry height="50" width="180" x="597" y="245" as="geometry" />
+          <mxGeometry height="50" width="180" x="697" y="270" as="geometry" />
         </mxCell>
         <mxCell id="ea2" edge="1" parent="1" source="grpc-stream" style="edgeStyle=orthogonalEdgeStyle;" target="handle-stream">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="dec-keepalive" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Keepalive?" vertex="1">
-          <mxGeometry height="70" width="190" x="592" y="335" as="geometry" />
+          <mxGeometry height="70" width="190" x="692" y="360" as="geometry" />
         </mxCell>
         <mxCell id="ea3" edge="1" parent="1" source="handle-stream" style="edgeStyle=orthogonalEdgeStyle;" target="dec-keepalive">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="update-replay" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Update ReplayId → return" vertex="1">
-          <mxGeometry height="45" width="170" x="840" y="350" as="geometry" />
+          <mxGeometry height="45" width="170" x="940" y="375" as="geometry" />
         </mxCell>
         <mxCell id="ea4" edge="1" parent="1" source="dec-keepalive" style="edgeStyle=orthogonalEdgeStyle;" target="update-replay" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="dec-paused" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Stream PAUSED?" vertex="1">
-          <mxGeometry height="70" width="190" x="592" y="445" as="geometry" />
+          <mxGeometry height="70" width="190" x="692" y="470" as="geometry" />
         </mxCell>
         <mxCell id="ea5" edge="1" parent="1" source="dec-keepalive" style="edgeStyle=orthogonalEdgeStyle;" target="dec-paused" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="ignore-event" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Ignore event" vertex="1">
-          <mxGeometry height="45" width="170" x="840" y="460" as="geometry" />
+          <mxGeometry height="45" width="170" x="940" y="485" as="geometry" />
         </mxCell>
         <mxCell id="ea6" edge="1" parent="1" source="dec-paused" style="edgeStyle=orthogonalEdgeStyle;" target="ignore-event" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="categorize" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="categorizeEvents()&#xa;GAP_* vs Normal CDC" vertex="1">
-          <mxGeometry height="55" width="180" x="597" y="555" as="geometry" />
+          <mxGeometry height="55" width="180" x="697" y="580" as="geometry" />
         </mxCell>
         <mxCell id="ea7" edge="1" parent="1" source="dec-paused" style="edgeStyle=orthogonalEdgeStyle;" target="categorize" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="layer-callback-label" parent="1" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;" value="SalesforceAsyncService.cdc() → onEvent callback" vertex="1">
+          <mxGeometry height="25" width="340" x="190" y="650" as="geometry" />
+        </mxCell>
         <mxCell id="cdc-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=12;fontColor=#006EAF;" value="CONTINUOUS EVENTS (Normal CDC)" vertex="1">
-          <mxGeometry height="30" width="260" x="100" y="645" as="geometry" />
+          <mxGeometry height="30" width="260" x="200" y="550" as="geometry" />
         </mxCell>
         <mxCell id="continuous-events" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="continuousEvents" vertex="1">
-          <mxGeometry height="50" width="160" x="150" y="685" as="geometry" />
+          <mxGeometry height="50" width="160" x="250" y="710" as="geometry" />
         </mxCell>
         <mxCell id="ea8" edge="1" parent="1" source="categorize" style="edgeStyle=orthogonalEdgeStyle;" target="continuous-events" value="continuousEvents">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="cdc-queue" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" value="CDC Queue (BullMQ)&#xa;cdcQueue.add(&#39;cdc&#39;, payload)" vertex="1">
-          <mxGeometry height="55" width="160" x="150" y="785" as="geometry" />
+          <mxGeometry height="55" width="160" x="250" y="810" as="geometry" />
         </mxCell>
         <mxCell id="ea9" edge="1" parent="1" source="continuous-events" style="edgeStyle=orthogonalEdgeStyle;" target="cdc-queue">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="layer-processor-label-cdc" parent="1" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;fontStyle=1;" value="CdcProcessor" vertex="1">
+          <mxGeometry height="20" width="160" x="250" y="883" as="geometry" />
+        </mxCell>
         <mxCell id="cdc-processor" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="CdcProcessor&#xa;handleCdc()" vertex="1">
-          <mxGeometry height="50" width="160" x="150" y="890" as="geometry" />
+          <mxGeometry height="50" width="160" x="250" y="913" as="geometry" />
         </mxCell>
         <mxCell id="ea10" edge="1" parent="1" source="cdc-queue" style="edgeStyle=orthogonalEdgeStyle;" target="cdc-processor">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="dec-dirty" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Record dirty?" vertex="1">
-          <mxGeometry height="70" width="170" x="145" y="980" as="geometry" />
+        <mxCell id="dec-dirty" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Record dirty?&#xa;(filterDirtyIds)" vertex="1">
+          <mxGeometry height="70" width="170" x="245" y="1003" as="geometry" />
         </mxCell>
         <mxCell id="ea11" edge="1" parent="1" source="cdc-processor" style="edgeStyle=orthogonalEdgeStyle;" target="dec-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="skip-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Skip event&#xa;(đang reconcile)" vertex="1">
-          <mxGeometry height="45" width="100" x="20" y="993" as="geometry" />
+          <mxGeometry height="45" width="100" x="120" y="1016" as="geometry" />
         </mxCell>
-        <mxCell id="ea12" edge="1" parent="1" source="dec-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="skip-dirty" value="Yes">
+        <mxCell id="ea12" edge="1" parent="1" source="dec-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="skip-dirty" value="All dirty">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="partial-dirty-note" parent="1" style="callout;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;perimeter=calloutPerimeter;" value="Partial dirty: chỉ&#xa;skip dirty IDs" vertex="1">
+          <mxGeometry height="40" width="150" x="90" y="1075" as="geometry" />
         </mxCell>
         <mxCell id="change-type" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="switch(changeType)" vertex="1">
-          <mxGeometry height="45" width="160" x="150" y="1095" as="geometry" />
+          <mxGeometry height="45" width="160" x="250" y="1120" as="geometry" />
         </mxCell>
-        <mxCell id="ea13" edge="1" parent="1" source="dec-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="change-type" value="No">
+        <mxCell id="ea13" edge="1" parent="1" source="dec-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="change-type" value="Clean IDs">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="create-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="CREATE&#xa;insertRecord()" vertex="1">
-          <mxGeometry height="55" width="110" x="-10" y="1200" as="geometry" />
+        <mxCell id="create-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="CREATE&#xa;upsertMany()" vertex="1">
+          <mxGeometry height="55" width="110" x="90" y="1225" as="geometry" />
         </mxCell>
-        <mxCell id="update-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="UPDATE&#xa;updateRecord()&#xa;+ fetch missing SF" vertex="1">
-          <mxGeometry height="55" width="110" x="120" y="1200" as="geometry" />
+        <mxCell id="update-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="UPDATE&#xa;updateMany()&#xa;+ fetch missing SF" vertex="1">
+          <mxGeometry height="55" width="110" x="220" y="1225" as="geometry" />
         </mxCell>
         <mxCell id="delete-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="DELETE&#xa;softDeleteMany()" vertex="1">
-          <mxGeometry height="55" width="110" x="260" y="1200" as="geometry" />
+          <mxGeometry height="55" width="110" x="360" y="1225" as="geometry" />
         </mxCell>
         <mxCell id="undelete-op" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="UNDELETE&#xa;undeleteMany()&#xa;+ fetch missing SF" vertex="1">
-          <mxGeometry height="55" width="110" x="390" y="1200" as="geometry" />
+          <mxGeometry height="55" width="110" x="490" y="1225" as="geometry" />
         </mxCell>
         <mxCell id="ea14" edge="1" parent="1" source="change-type" style="edgeStyle=orthogonalEdgeStyle;" target="create-op" value="CREATE">
           <mxGeometry relative="1" as="geometry" />
@@ -113,116 +125,114 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="db-cdc" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=11;" value="PostgreSQL DB" vertex="1">
-          <mxGeometry height="60" width="140" x="170" y="1390" as="geometry" />
+          <mxGeometry height="60" width="140" x="270" y="1415" as="geometry" />
         </mxCell>
         <mxCell id="ea18a" edge="1" parent="1" source="create-op" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="db-cdc">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="45" y="1290" />
-              <mxPoint x="240" y="1290" />
+              <mxPoint x="145" y="1315" />
+              <mxPoint x="340" y="1315" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="ea18b" edge="1" parent="1" source="update-op" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="db-cdc">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="175" y="1290" />
-              <mxPoint x="240" y="1290" />
+              <mxPoint x="275" y="1315" />
+              <mxPoint x="340" y="1315" />
             </Array>
-            <mxPoint x="185" y="1335" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="ea18c" edge="1" parent="1" source="delete-op" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="db-cdc">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="315" y="1290" />
-              <mxPoint x="240" y="1290" />
+              <mxPoint x="415" y="1315" />
+              <mxPoint x="340" y="1315" />
             </Array>
-            <mxPoint x="305" y="1335" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="ea18d" edge="1" parent="1" source="undelete-op" style="edgeStyle=orthogonalEdgeStyle;" target="db-cdc">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="445" y="1290" />
-              <mxPoint x="240" y="1290" />
+              <mxPoint x="545" y="1315" />
+              <mxPoint x="340" y="1315" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="gap-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=12;fontColor=#B46504;" value="GAP EVENTS" vertex="1">
-          <mxGeometry height="30" width="160" x="900" y="645" as="geometry" />
+          <mxGeometry height="30" width="160" x="1000" y="565" as="geometry" />
         </mxCell>
         <mxCell id="gap-events" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="gapEvents (GAP_*)" vertex="1">
-          <mxGeometry height="50" width="160" x="910" y="685" as="geometry" />
+          <mxGeometry height="50" width="160" x="1010" y="710" as="geometry" />
         </mxCell>
         <mxCell id="ea19" edge="1" parent="1" source="categorize" style="edgeStyle=orthogonalEdgeStyle;" target="gap-events" value="gapEvents">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="handle-gap" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="handleGapEvents()" vertex="1">
-          <mxGeometry height="50" width="160" x="910" y="785" as="geometry" />
+        <mxCell id="handle-gap" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="handleGapEvents()&#xa;[SalesforceGrpcService]" vertex="1">
+          <mxGeometry height="50" width="160" x="1010" y="810" as="geometry" />
         </mxCell>
         <mxCell id="ea20" edge="1" parent="1" source="gap-events" style="edgeStyle=orthogonalEdgeStyle;" target="handle-gap">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="dec-overflow" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="GAP_OVERFLOW hoặc&#xa;vượt threshold?" vertex="1">
-          <mxGeometry height="80" width="180" x="900" y="875" as="geometry" />
+          <mxGeometry height="80" width="180" x="1000" y="900" as="geometry" />
         </mxCell>
         <mxCell id="ea21" edge="1" parent="1" source="handle-gap" style="edgeStyle=orthogonalEdgeStyle;" target="dec-overflow">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="normal-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=11;fontColor=#5B8000;" value="NORMAL GAP" vertex="1">
-          <mxGeometry height="25" width="130" x="720" y="995" as="geometry" />
+          <mxGeometry height="25" width="130" x="780" y="1005" as="geometry" />
         </mxCell>
-        <mxCell id="mark-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="Mark Dirty (Redis)&#xa;addDirty / addDirtyAll" vertex="1">
-          <mxGeometry height="55" width="160" x="710" y="1025" as="geometry" />
+        <mxCell id="mark-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="[onEvent callback]&#xa;Mark Dirty (Redis)&#xa;addDirty / addDirtyAll" vertex="1">
+          <mxGeometry height="65" width="170" x="805" y="1045" as="geometry" />
         </mxCell>
         <mxCell id="ea22" edge="1" parent="1" source="dec-overflow" style="edgeStyle=orthogonalEdgeStyle;" target="mark-dirty" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="dec-ids" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Has recordIds?" vertex="1">
-          <mxGeometry height="65" width="170" x="705" y="1120" as="geometry" />
+          <mxGeometry height="65" width="170" x="805" y="1155" as="geometry" />
         </mxCell>
         <mxCell id="ea23" edge="1" parent="1" source="mark-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="dec-ids">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="gap-q-ids" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" value="GAP Queue&#xa;NORMAL_WITH_IDS" vertex="1">
-          <mxGeometry height="55" width="160" x="600" y="1240" as="geometry" />
+          <mxGeometry height="55" width="160" x="700" y="1275" as="geometry" />
         </mxCell>
         <mxCell id="ea24" edge="1" parent="1" source="dec-ids" style="edgeStyle=orthogonalEdgeStyle;" target="gap-q-ids" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="gap-q-noids" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" value="GAP Queue&#xa;NORMAL_WITHOUT_IDS" vertex="1">
-          <mxGeometry height="55" width="160" x="790" y="1240" as="geometry" />
+          <mxGeometry height="55" width="160" x="890" y="1275" as="geometry" />
         </mxCell>
         <mxCell id="ea25" edge="1" parent="1" source="dec-ids" style="edgeStyle=orthogonalEdgeStyle;" target="gap-q-noids" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="nwi-add-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="addDirty(recordIds)" vertex="1">
-          <mxGeometry height="45" width="160" x="530" y="1360" as="geometry" />
+        <mxCell id="nwi-add-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="addDirty(recordIds)&#xa;[safety, in processor]" vertex="1">
+          <mxGeometry height="45" width="160" x="630" y="1395" as="geometry" />
         </mxCell>
         <mxCell id="ea26" edge="1" parent="1" source="gap-q-ids" style="edgeStyle=orthogonalEdgeStyle;" target="nwi-add-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="nwi-sync-ids" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="syncByIds()&#xa;batch 200 records/query" vertex="1">
-          <mxGeometry height="50" width="160" x="530" y="1450" as="geometry" />
+          <mxGeometry height="50" width="160" x="630" y="1485" as="geometry" />
         </mxCell>
         <mxCell id="enw1" edge="1" parent="1" source="nwi-add-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="nwi-sync-ids">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="dec-lmd" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="maxLmd exists?" vertex="1">
-          <mxGeometry height="70" width="170" x="525" y="1545" as="geometry" />
+          <mxGeometry height="70" width="170" x="625" y="1580" as="geometry" />
         </mxCell>
         <mxCell id="enw2" edge="1" parent="1" source="nwi-sync-ids" style="edgeStyle=orthogonalEdgeStyle;" target="dec-lmd">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="nwi-catchup" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="catch-up sync&#xa;LMD &gt; maxLmd" vertex="1">
-          <mxGeometry height="50" width="160" x="530" y="1665" as="geometry" />
+          <mxGeometry height="50" width="160" x="630" y="1700" as="geometry" />
         </mxCell>
         <mxCell id="enw3" edge="1" parent="1" source="dec-lmd" style="edgeStyle=orthogonalEdgeStyle;" target="nwi-catchup" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="nwi-remove-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="removeDirty(recordIds)" vertex="1">
-          <mxGeometry height="45" width="160" x="530" y="1765" as="geometry" />
+          <mxGeometry height="45" width="160" x="630" y="1800" as="geometry" />
         </mxCell>
         <mxCell id="enw4" edge="1" parent="1" source="nwi-catchup" style="edgeStyle=orthogonalEdgeStyle;" target="nwi-remove-dirty">
           <mxGeometry relative="1" as="geometry" />
@@ -230,31 +240,31 @@
         <mxCell id="enw5" edge="1" parent="1" source="dec-lmd" style="edgeStyle=orthogonalEdgeStyle;" target="nwi-remove-dirty" value="No">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="720" y="1580" />
-              <mxPoint x="720" y="1787" />
+              <mxPoint x="820" y="1615" />
+              <mxPoint x="820" y="1822" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="nwoi-add-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="addDirtyAll(object)" vertex="1">
-          <mxGeometry height="45" width="160" x="800" y="1360" as="geometry" />
+        <mxCell id="nwoi-add-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="addDirtyAll(object)&#xa;[safety, in processor]" vertex="1">
+          <mxGeometry height="45" width="160" x="900" y="1395" as="geometry" />
         </mxCell>
         <mxCell id="ea27" edge="1" parent="1" source="gap-q-noids" style="edgeStyle=orthogonalEdgeStyle;" target="nwoi-add-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="nwoi-sync-ts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="syncByTimestamp()&#xa;from-to + 2min buffer" vertex="1">
-          <mxGeometry height="55" width="160" x="800" y="1450" as="geometry" />
+          <mxGeometry height="55" width="160" x="900" y="1485" as="geometry" />
         </mxCell>
         <mxCell id="enwo1" edge="1" parent="1" source="nwoi-add-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="nwoi-sync-ts">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="nwoi-remove-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="removeDirtyAll(object)" vertex="1">
-          <mxGeometry height="45" width="160" x="800" y="1555" as="geometry" />
+          <mxGeometry height="45" width="160" x="900" y="1590" as="geometry" />
         </mxCell>
         <mxCell id="enwo2" edge="1" parent="1" source="nwoi-sync-ts" style="edgeStyle=orthogonalEdgeStyle;" target="nwoi-remove-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="db-gap" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=11;" value="PostgreSQL DB" vertex="1">
-          <mxGeometry height="60" width="150" x="650" y="1870" as="geometry" />
+          <mxGeometry height="60" width="150" x="745" y="1905" as="geometry" />
         </mxCell>
         <mxCell id="ea28a" edge="1" parent="1" source="nwi-remove-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="db-gap">
           <mxGeometry relative="1" as="geometry" />
@@ -262,84 +272,124 @@
         <mxCell id="ea28b" edge="1" parent="1" source="nwoi-remove-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="db-gap">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="880" y="1840" />
-              <mxPoint x="725" y="1840" />
+              <mxPoint x="980" y="1875" />
+              <mxPoint x="820" y="1875" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="full-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=11;fontColor=#AE4132;" value="FULL RESYNC (Overflow)" vertex="1">
-          <mxGeometry height="25" width="200" x="1110" y="995" as="geometry" />
+          <mxGeometry height="25" width="200" x="1270" y="1005" as="geometry" />
         </mxCell>
-        <mxCell id="pause-stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="pauseStream()&#xa;state = PAUSED&#xa;stream.end()" vertex="1">
-          <mxGeometry height="65" width="160" x="1120" y="1025" as="geometry" />
+        <mxCell id="pause-stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="pauseStream()&#xa;[gRPC layer]&#xa;state=PAUSED, stream.end()" vertex="1">
+          <mxGeometry height="65" width="160" x="1220" y="1045" as="geometry" />
         </mxCell>
         <mxCell id="ea29" edge="1" parent="1" source="dec-overflow" style="edgeStyle=orthogonalEdgeStyle;" target="pause-stream" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="gap-q-full" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" value="GAP Queue&#xa;FULL_RESYNC" vertex="1">
-          <mxGeometry height="55" width="160" x="1120" y="1145" as="geometry" />
+        <mxCell id="full-mark-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="[onEvent callback]&#xa;addDirtyAll(object)&#xa;(BEFORE queue job)" vertex="1">
+          <mxGeometry height="60" width="160" x="1220" y="1160" as="geometry" />
         </mxCell>
-        <mxCell id="ea30" edge="1" parent="1" source="pause-stream" style="edgeStyle=orthogonalEdgeStyle;" target="gap-q-full">
+        <mxCell id="ea29b" edge="1" parent="1" source="pause-stream" style="edgeStyle=orthogonalEdgeStyle;" target="full-mark-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="gap-q-full" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" value="GAP Queue&#xa;FULL_RESYNC" vertex="1">
+          <mxGeometry height="55" width="160" x="1220" y="1270" as="geometry" />
+        </mxCell>
+        <mxCell id="ea30" edge="1" parent="1" source="full-mark-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="gap-q-full">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="layer-processor-label-gap" parent="1" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;fontStyle=1;" value="GapProcessor → handleFullResync()" vertex="1">
+          <mxGeometry height="20" width="200" x="1200" y="1341" as="geometry" />
+        </mxCell>
         <mxCell id="handle-full" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" value="handleFullResync()" vertex="1">
-          <mxGeometry height="50" width="160" x="1120" y="1255" as="geometry" />
+          <mxGeometry height="50" width="160" x="1220" y="1371" as="geometry" />
         </mxCell>
         <mxCell id="ea31" edge="1" parent="1" source="gap-q-full" style="edgeStyle=orthogonalEdgeStyle;" target="handle-full">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="sync-records" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="syncRecord()&#xa;LMD ≥ hôm qua" vertex="1">
-          <mxGeometry height="55" width="160" x="1120" y="1360" as="geometry" />
+          <mxGeometry height="55" width="160" x="1220" y="1471" as="geometry" />
         </mxCell>
         <mxCell id="ea32" edge="1" parent="1" source="handle-full" style="edgeStyle=orthogonalEdgeStyle;" target="sync-records">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="get-deleted" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="getDeletedRecordIds()&#xa;IsDeleted=true&#xa;since hôm qua" vertex="1">
-          <mxGeometry height="65" width="160" x="1120" y="1475" as="geometry" />
+          <mxGeometry height="65" width="160" x="1220" y="1586" as="geometry" />
         </mxCell>
         <mxCell id="ea33" edge="1" parent="1" source="sync-records" style="edgeStyle=orthogonalEdgeStyle;" target="get-deleted">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="soft-delete" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="softDeleteMany()&#xa;(records trong DB)" vertex="1">
-          <mxGeometry height="55" width="160" x="1120" y="1600" as="geometry" />
+          <mxGeometry height="55" width="160" x="1220" y="1711" as="geometry" />
         </mxCell>
         <mxCell id="ea34" edge="1" parent="1" source="get-deleted" style="edgeStyle=orthogonalEdgeStyle;" target="soft-delete">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="db-full" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=11;" value="PostgreSQL DB" vertex="1">
-          <mxGeometry height="60" width="160" x="1120" y="1715" as="geometry" />
+          <mxGeometry height="60" width="160" x="1220" y="1826" as="geometry" />
         </mxCell>
         <mxCell id="ea35a" edge="1" parent="1" source="sync-records" style="edgeStyle=orthogonalEdgeStyle;" target="db-full">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1310" y="1387" />
-              <mxPoint x="1310" y="1745" />
+              <mxPoint x="1410" y="1498" />
+              <mxPoint x="1410" y="1856" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="ea35b" edge="1" parent="1" source="soft-delete" style="edgeStyle=orthogonalEdgeStyle;" target="db-full">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="on-resume" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="onResume()&#xa;Redis Publish&#xa;salesforce:stream:resume" vertex="1">
-          <mxGeometry height="65" width="160" x="1120" y="1840" as="geometry" />
+        <mxCell id="full-remove-dirty" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="removeDirtyAll(object)&#xa;[clear dirty flag]" vertex="1">
+          <mxGeometry height="50" width="160" x="1220" y="1946" as="geometry" />
         </mxCell>
-        <mxCell id="ea36" edge="1" parent="1" source="db-full" style="edgeStyle=orthogonalEdgeStyle;" target="on-resume">
+        <mxCell id="ea35c" edge="1" parent="1" source="db-full" style="edgeStyle=orthogonalEdgeStyle;" target="full-remove-dirty">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="redis-sub" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="StreamResumeSubscriberService&#xa;(Redis Subscribe)" vertex="1">
-          <mxGeometry height="55" width="160" x="1120" y="1965" as="geometry" />
+        <mxCell id="on-resume" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="publishOrResumeDirect()&#xa;onResume callback" vertex="1">
+          <mxGeometry height="55" width="160" x="1220" y="2056" as="geometry" />
         </mxCell>
-        <mxCell id="ea37" edge="1" parent="1" source="on-resume" style="edgeStyle=orthogonalEdgeStyle;" target="redis-sub">
+        <mxCell id="ea36" edge="1" parent="1" source="full-remove-dirty" style="edgeStyle=orthogonalEdgeStyle;" target="on-resume">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dec-redis" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Redis publish&#xa;success?" vertex="1">
+          <mxGeometry height="70" width="170" x="1215" y="2171" as="geometry" />
+        </mxCell>
+        <mxCell id="ea36b" edge="1" parent="1" source="on-resume" style="edgeStyle=orthogonalEdgeStyle;" target="dec-redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-sub" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="StreamResumeSubscriberService&#xa;(Redis Subscribe)&#xa;salesforce:stream:resume" vertex="1">
+          <mxGeometry height="65" width="175" x="1140" y="2311" as="geometry" />
+        </mxCell>
+        <mxCell id="ea37" edge="1" parent="1" source="dec-redis" style="edgeStyle=orthogonalEdgeStyle;" target="redis-sub" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="resume-stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="resumeStream()&#xa;ReplayPreset.CUSTOM&#xa;+ lastReplayId" vertex="1">
-          <mxGeometry height="65" width="160" x="1120" y="2080" as="geometry" />
+          <mxGeometry height="65" width="160" x="1140" y="2436" as="geometry" />
         </mxCell>
         <mxCell id="ea38" edge="1" parent="1" source="redis-sub" style="edgeStyle=orthogonalEdgeStyle;" target="resume-stream">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="redis-fail-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Redis publish thất bại&#xa;(ECONNREFUSED / timeout)&#xa;→ direct resumeStream()" vertex="1">
+          <mxGeometry height="70" width="175" x="1440" y="2311" as="geometry" />
+        </mxCell>
+        <mxCell id="ea-redis-fail" edge="1" parent="1" source="dec-redis" style="edgeStyle=orthogonalEdgeStyle;" target="redis-fail-note" value="No (retry exhausted)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1430" y="2206" />
+              <mxPoint x="1527" y="2206" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ea-direct-resume" edge="1" parent="1" source="redis-fail-note" style="edgeStyle=orthogonalEdgeStyle;" target="resume-stream">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1527" y="2415" />
+              <mxPoint x="1220" y="2415" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
         <mxCell id="resubscribe" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" value="Resubscribe gRPC&#xa;Catch-up từ Replay ID" vertex="1">
-          <mxGeometry height="55" width="160" x="1120" y="2205" as="geometry" />
+          <mxGeometry height="55" width="160" x="1140" y="2561" as="geometry" />
         </mxCell>
         <mxCell id="ea39" edge="1" parent="1" source="resume-stream" style="edgeStyle=orthogonalEdgeStyle;" target="resubscribe">
           <mxGeometry relative="1" as="geometry" />
@@ -347,31 +397,34 @@
         <mxCell id="ea40" edge="1" parent="1" source="resubscribe" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#82b366;fontColor=#82b366;" target="grpc-stream" value="Resume stream">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1380" y="2232" />
-              <mxPoint x="1380" y="167" />
+              <mxPoint x="1480" y="2588" />
+              <mxPoint x="1480" y="192" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="legend-bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#999999;" value="" vertex="1">
-          <mxGeometry height="230" width="220" x="30" y="30" as="geometry" />
+          <mxGeometry height="270" width="220" x="130" y="45" as="geometry" />
         </mxCell>
         <mxCell id="legend-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=13;" value="Legend" vertex="1">
-          <mxGeometry height="25" width="80" x="110" y="38" as="geometry" />
+          <mxGeometry height="25" width="80" x="210" y="53" as="geometry" />
         </mxCell>
         <mxCell id="lg1" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="gRPC / Stream Layer" vertex="1">
-          <mxGeometry height="28" width="190" x="45" y="72" as="geometry" />
+          <mxGeometry height="28" width="190" x="145" y="87" as="geometry" />
         </mxCell>
-        <mxCell id="lg2" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="Queue (BullMQ)" vertex="1">
-          <mxGeometry height="28" width="190" x="45" y="110" as="geometry" />
+        <mxCell id="lg2" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="Queue (BullMQ) / Processor" vertex="1">
+          <mxGeometry height="28" width="190" x="145" y="125" as="geometry" />
         </mxCell>
-        <mxCell id="lg3" parent="1" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="Gap / Overflow Handler" vertex="1">
-          <mxGeometry height="28" width="190" x="45" y="148" as="geometry" />
+        <mxCell id="lg3" parent="1" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="Gap / Overflow Handler (SF sync)" vertex="1">
+          <mxGeometry height="28" width="190" x="145" y="163" as="geometry" />
         </mxCell>
-        <mxCell id="lg4" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="DB / Kết thúc thành công" vertex="1">
-          <mxGeometry height="28" width="190" x="45" y="186" as="geometry" />
+        <mxCell id="lg4" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="onEvent callback / DB / Success" vertex="1">
+          <mxGeometry height="28" width="190" x="145" y="201" as="geometry" />
         </mxCell>
-        <mxCell id="lg5" parent="1" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Redis Pub/Sub" vertex="1">
-          <mxGeometry height="28" width="190" x="45" y="224" as="geometry" />
+        <mxCell id="lg5" parent="1" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Redis (Dirty tracking / Pub-Sub)" vertex="1">
+          <mxGeometry height="28" width="190" x="145" y="239" as="geometry" />
+        </mxCell>
+        <mxCell id="lg6" parent="1" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Decision" vertex="1">
+          <mxGeometry height="28" width="190" x="145" y="277" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
