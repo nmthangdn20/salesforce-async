@@ -16,6 +16,8 @@ import {
   GAP_CONFIG,
   RECONNECT_CONFIG,
   SALESFORCE_GRPC_ENDPOINT,
+  SCHEMA_CACHE_TTL_MS,
+  TOPIC_CACHE_TTL_MS,
 } from './constants/salesforce-grpc.constants';
 import {
   EventBusV1Package,
@@ -45,8 +47,15 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
   private packageDef!: grpc.GrpcObject;
   private readonly clients = new Map<string, PubSubClient>();
 
-  // Schema Caching
-  private readonly schemaCache = new Map<string, SchemaInfo>();
+  // Topic & Schema Caching (both with TTL; avroType invalidated when schema refreshes)
+  private readonly topicCache = new Map<
+    string,
+    { topicInfo: TopicInfo; expiresAt: number }
+  >();
+  private readonly schemaCache = new Map<
+    string,
+    { schemaInfo: SchemaInfo; expiresAt: number }
+  >();
   private readonly avroTypeCache = new Map<string, Type>();
 
   // Stream Management
@@ -57,6 +66,8 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
   >();
   private readonly streamStates = new Map<StreamKey, StreamStateInfo>();
   private readonly reconnectTimers = new Map<StreamKey, NodeJS.Timeout>();
+  /** StreamKeys currently in resume flow; prevents double resume. */
+  private readonly resumingStreams = new Set<StreamKey>();
 
   // Lifecycle
   private isShuttingDown = false;
@@ -113,6 +124,7 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
     );
 
     this.setupStreamHandlers(stream, topicInfo, streamKey, subscriptionConfig);
+    this.streamStates.set(streamKey, { state: StreamState.ACTIVE });
   }
 
   unsubscribe(tenantId: string, topicName: string): void {
@@ -265,7 +277,8 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`Received ${response.events.length} events`);
 
-    const schema = this.schemaCache.get(topicInfo.schema_id);
+    const schemaEntry = this.schemaCache.get(topicInfo.schema_id);
+    const schema = schemaEntry?.schemaInfo;
     if (!schema) {
       throw new Error(`Schema not found for topic: ${topicInfo.topic_name}`);
     }
@@ -311,20 +324,17 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
     const currentCount = subscriptionConfig.gapEventCount || 0;
     const totalCount = currentCount + events.length;
 
+    const fromCommitTs = events[0].payload?.ChangeEventHeader?.commitTimestamp;
+    const toCommitTs =
+      events[events.length - 1].payload?.ChangeEventHeader?.commitTimestamp;
     const gapInfo: GapInfo = {
       type: 'NORMAL',
       topic: subscriptionConfig.topicName,
       objectName: events[0].payload?.ChangeEventHeader?.entityName,
-      fromReplayId: events[0].replayId as unknown as string,
-      toReplayId: events[events.length - 1].replayId as unknown as string,
-      fromTimestamp: Number(
-        events[0].payload?.ChangeEventHeader
-          ?.commitTimestamp as unknown as number,
-      ),
-      toTimestamp: Number(
-        events[events.length - 1].payload?.ChangeEventHeader
-          ?.commitTimestamp as unknown as number,
-      ),
+      fromReplayId: String(events[0].replayId),
+      toReplayId: String(events[events.length - 1].replayId),
+      fromTimestamp: fromCommitTs != null ? Number(fromCommitTs) : 0,
+      toTimestamp: toCommitTs != null ? Number(toCommitTs) : 0,
     };
 
     const inResumeCooldown: boolean = Boolean(
@@ -445,11 +455,20 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
   async resumeStream(tenantId: string, topicName: string): Promise<void> {
     const streamKey = this.createStreamKey(tenantId, topicName);
 
+    if (this.resumingStreams.has(streamKey)) {
+      this.logger.warn(
+        `Resume already in progress for ${streamKey}, ignoring duplicate call`,
+      );
+      return;
+    }
+    this.resumingStreams.add(streamKey);
+
     this.clearReconnectTimer(streamKey);
 
     const subConfig = this.subscriptionConfigs.get(streamKey);
 
     if (!subConfig) {
+      this.resumingStreams.delete(streamKey);
       const error = `No subscription config found for ${streamKey}`;
       this.logger.error(error);
       throw new Error(error);
@@ -457,6 +476,7 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
 
     const currentState = this.streamStates.get(streamKey);
     if (currentState?.state !== StreamState.PAUSED) {
+      this.resumingStreams.delete(streamKey);
       this.logger.warn(
         `Cannot resume stream ${streamKey} - current state: ${currentState?.state || 'UNKNOWN'}`,
       );
@@ -493,6 +513,8 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
       );
 
       throw error;
+    } finally {
+      this.resumingStreams.delete(streamKey);
     }
   }
 
@@ -665,6 +687,7 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
         reconnectOptions,
       );
 
+      subConfig.retryCount = 0;
       this.streamStates.set(streamKey, {
         state: StreamState.ACTIVE,
       });
@@ -711,6 +734,14 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
     config: SalesforceGrpcConfig,
     topicName: string,
   ): Promise<TopicInfo> {
+    const cacheKey = this.createStreamKey(config.tenantId, topicName);
+    const entry = this.topicCache.get(cacheKey);
+    if (entry && entry.expiresAt > Date.now()) {
+      this.logger.debug(`GetTopic cache hit for: ${topicName}`);
+      return entry.topicInfo;
+    }
+    if (entry) this.topicCache.delete(cacheKey);
+
     const client = this.getClient(config.tenantId);
     const metadata = this.createMetadata(config);
 
@@ -718,13 +749,20 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
       client.GetTopic(
         { topic_name: topicName },
         metadata,
-        (error, response) => {
-          if (error) {
-            this.logger.error(`GetTopic error: ${error.message}`);
-            reject(error);
-          } else {
+        (err: grpc.ServiceError | null, res: TopicInfo | undefined) => {
+          if (err) {
+            this.logger.error(`GetTopic error: ${err.message}`);
+            reject(err);
+          } else if (res) {
+            const topicInfo: TopicInfo = res;
+            this.topicCache.set(cacheKey, {
+              topicInfo,
+              expiresAt: Date.now() + TOPIC_CACHE_TTL_MS,
+            });
             this.logger.log(`GetTopic success for: ${topicName}`);
-            resolve(response);
+            resolve(topicInfo);
+          } else {
+            reject(new Error('GetTopic returned no response'));
           }
         },
       );
@@ -735,22 +773,31 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
     config: SalesforceGrpcConfig,
     schemaId: string,
   ): Promise<SchemaInfo> {
-    if (this.schemaCache.has(schemaId)) {
-      return this.schemaCache.get(schemaId)!;
+    const entry = this.schemaCache.get(schemaId);
+    if (entry && entry.expiresAt > Date.now()) {
+      this.logger.debug(`GetSchema cache hit for: ${schemaId}`);
+      return entry.schemaInfo;
     }
+    if (entry) this.schemaCache.delete(schemaId);
 
     const client = this.getClient(config.tenantId);
     const metadata = this.createMetadata(config);
 
     return new Promise((resolve, reject) => {
-      client.GetSchema({ schema_id: schemaId }, metadata, (error, response) => {
-        if (error) {
-          this.logger.error(`GetSchema error: ${error.message}`);
-          reject(error);
-        } else {
-          this.schemaCache.set(schemaId, response);
+      client.GetSchema({ schema_id: schemaId }, metadata, (err, res) => {
+        if (err) {
+          this.logger.error(`GetSchema error: ${err.message}`);
+          reject(err);
+        } else if (res) {
+          this.schemaCache.set(schemaId, {
+            schemaInfo: res,
+            expiresAt: Date.now() + SCHEMA_CACHE_TTL_MS,
+          });
+          this.avroTypeCache.delete(schemaId);
           this.logger.log(`GetSchema success for: ${schemaId}`);
-          resolve(response);
+          resolve(res);
+        } else {
+          reject(new Error('GetSchema returned no response'));
         }
       });
     });
@@ -836,8 +883,10 @@ export class SalesforceGrpcService implements OnModuleInit, OnModuleDestroy {
   }
 
   private cleanupCaches(): void {
+    this.topicCache.clear();
     this.schemaCache.clear();
     this.avroTypeCache.clear();
+    this.resumingStreams.clear();
     this.subscriptionConfigs.clear();
   }
 }
