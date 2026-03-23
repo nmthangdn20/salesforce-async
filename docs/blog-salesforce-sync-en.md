@@ -582,35 +582,4 @@ Salesforce CDC Event (Avro/gRPC)
                                   → Stream ACTIVE ✓
 ```
 
----
-
-## 11. Conclusions and Lessons Learned
-
-### Trade-offs Made
-
-**Reliability over raw speed**: The system prioritizes zero data loss over maximum throughput. Dirty flags, stream pause/resume, catch-up sync — all of these add small latencies but guarantee correctness.
-
-**Eventual consistency**: The DB won't always be 100% identical to Salesforce in real-time, but it will converge to the correct state after all events are processed.
-
-### Reusable Patterns
-
-1. **Dirty flags for reconciliation** — this pattern applies to any system that needs to sync data without race conditions.
-
-2. **Threshold-based escalation** — classify the severity of incidents rather than always defaulting to the most expensive approach.
-
-3. **Stream pause/resume with replayId** — zero-loss reconciliation isn't just for Salesforce; it applies to any event stream with replay capability (Kafka, Kinesis...).
-
-4. **Redis Pub/Sub for multi-process coordination** — simpler and more effective than shared memory or polling.
-
-5. **Decoupled receiver/processor via queue** — separating the gRPC stream receiver from the DB writer lets both scale independently.
-
-### Potential Improvements
-
-- **Configurable thresholds per tenant**: Currently `maxGapEventsBeforeResync = 5` is global. Large tenants may need a different threshold.
-- **gRPC deadline timeout**: Currently `GetTopic`/`GetSchema` have no timeout, which can hang on slow networks.
-- **FULL_RESYNC scope optimization**: Instead of syncing `LMD >= yesterday`, use the exact gap time range to reduce data volume.
-- **Unit tests**: Edge cases (partial dirty, cooldown, catch-up sync) need better test coverage.
-
----
-
 *This article is based on a real project using NestJS, Salesforce Pub/Sub API v1, BullMQ 5.x and PostgreSQL. Code snippets have been simplified for illustration purposes.*
