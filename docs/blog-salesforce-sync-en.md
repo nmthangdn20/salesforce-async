@@ -581,5 +581,3 @@ Salesforce CDC Event (Avro/gRPC)
                                   resumeStream(replayId)
                                   → Stream ACTIVE ✓
 ```
-
-*This article is based on a real project using NestJS, Salesforce Pub/Sub API v1, BullMQ 5.x and PostgreSQL. Code snippets have been simplified for illustration purposes.*
