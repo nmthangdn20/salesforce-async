@@ -1,3 +1,6 @@
+# Salesforce CLI generated files (IDE tooling only)
+.sfdx/
+
 # compiled output
 /dist
 /node_modules

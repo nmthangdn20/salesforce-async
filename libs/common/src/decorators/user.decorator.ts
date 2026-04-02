@@ -9,7 +9,11 @@ function getByPath<T extends object>(obj: T, path: string): any {
 
 export const User = createParamDecorator(
   (k: NestedKeyOf<TUser>, ctx: ExecutionContext): TUser => {
-    const request = ctx.switchToHttp().getRequest<Request>();
+    const request = ctx.switchToHttp().getRequest<
+      Request & {
+        user: TUser;
+      }
+    >();
     const user = request.user as TUser;
 
     return k ? getByPath(user, k) : user;
